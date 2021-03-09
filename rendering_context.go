@@ -27,7 +27,10 @@ func WrapContext(jsContext js.Value) *RenderingContext {
 }
 
 func FromCanvas(canvasEl js.Value) (*RenderingContext, error) {
-	jsContext := canvasEl.Call("getContext", "webgl")
+	jsContext := canvasEl.Call("getContext", "webgl2")
+	if jsContext.IsUndefined() {
+		jsContext = canvasEl.Call("getContext", "webgl")
+	}
 	if jsContext.IsUndefined() {
 		jsContext = canvasEl.Call("getContext", "experimental-webgl")
 	}
@@ -266,6 +269,14 @@ func (c *RenderingContext) CopyTexImage2D(target types.GLEnum, level int, intern
 
 func (c *RenderingContext) CopyTexSubImage2D(target types.GLEnum, level int, xOffset, yOffset int, x, y int, width, height int) {
 	c.js.Call("copyTexSubImage2D", uint32(target), level, xOffset, yOffset, x, y, width, height)
+}
+
+func (c *RenderingContext) CreateVertexArray() *types.VertexArray {
+	return types.NewVertexArray(c.js.Call("createVertexArray"))
+}
+
+func (c *RenderingContext) BindVertexArray(vertexArray *types.VertexArray) {
+	c.js.Call("bindVertexArray", vertexArray.GetJs())
 }
 
 func (c *RenderingContext) CreateBuffer() *types.Buffer {
