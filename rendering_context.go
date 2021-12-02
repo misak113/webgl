@@ -30,14 +30,24 @@ func FromCanvas(canvasEl js.Value) (*RenderingContext, error) {
 	jsContext := canvasEl.Call("getContext", "webgl2")
 	if jsContext.IsUndefined() || jsContext.IsNull() {
 		jsContext = canvasEl.Call("getContext", "webgl")
+		polyfillOldVersion(jsContext)
 	}
 	if jsContext.IsUndefined() || jsContext.IsNull() {
 		jsContext = canvasEl.Call("getContext", "experimental-webgl")
+		polyfillOldVersion(jsContext)
 	}
 	if jsContext.IsUndefined() || jsContext.IsNull() {
 		return nil, errors.New("browser might not support webgl")
 	}
 	return WrapContext(jsContext), nil
+}
+
+func polyfillOldVersion(jsContext js.Value) {
+	vaoExt := jsContext.Call("getExtension", "OES_vertex_array_object")
+	jsContext.Set("bindVertexArray", vaoExt.Get("bindVertexArrayOES").Call("bind", vaoExt))
+	jsContext.Set("createVertexArray", vaoExt.Get("createVertexArrayOES").Call("bind", vaoExt))
+	jsContext.Set("deleteVertexArray", vaoExt.Get("deleteVertexArrayOES").Call("bind", vaoExt))
+	jsContext.Set("isVertexArray", vaoExt.Get("isVertexArrayOES").Call("bind", vaoExt))
 }
 
 func (c *RenderingContext) GetJs() js.Value {
