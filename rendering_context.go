@@ -28,13 +28,13 @@ func WrapContext(jsContext js.Value) *RenderingContext {
 
 func FromCanvas(canvasEl js.Value) (*RenderingContext, error) {
 	jsContext := canvasEl.Call("getContext", "webgl2")
-	if jsContext.IsUndefined() {
+	if jsContext.IsUndefined() || jsContext.IsNull() {
 		jsContext = canvasEl.Call("getContext", "webgl")
 	}
-	if jsContext.IsUndefined() {
+	if jsContext.IsUndefined() || jsContext.IsNull() {
 		jsContext = canvasEl.Call("getContext", "experimental-webgl")
 	}
-	if jsContext.IsUndefined() {
+	if jsContext.IsUndefined() || jsContext.IsNull() {
 		return nil, errors.New("browser might not support webgl")
 	}
 	return WrapContext(jsContext), nil
